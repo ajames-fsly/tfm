@@ -401,25 +401,6 @@ func copyWorkspaces(c tfclient.ClientContexts, wsMapCfg map[string]string) error
 		return errors.Wrap(err, "Failed to list workspaces from destination target")
 	}
 
-	var project tfe.Project
-
-	// Check if Project ID is set
-	if viper.GetString("dst_tfc_project_id") != "" {
-
-		project.ID = viper.GetString("dst_tfc_project_id")
-		o.AddMessageUserProvided("Destination Project ID is Set: ", project.ID)
-
-	} else {
-
-		// get Default Project ID
-		project.ID, err = getDstDefaultProjectID(c)
-
-		if err != nil {
-			fmt.Println("Error Retrieving Destination Project ID. Destination TFE/TFC API may not be supported. Please check credentials")
-			os.Exit(0)
-		}
-	}
-
 	// Loop each workspace in the srcWorkspaces slice, check for the workspace existence in the destination,
 	// and if a workspace exists in the destination, then do nothing, else create workspace in destination.
 	for _, srcworkspace := range srcWorkspaces {
@@ -467,7 +448,6 @@ func copyWorkspaces(c tfclient.ClientContexts, wsMapCfg map[string]string) error
 				//VCSRepo: &tfe.VCSRepoOptions{}, covered with `configureVCSsettings` function`
 				WorkingDirectory: &srcworkspace.WorkingDirectory,
 				Tags:             tag,
-				Project:          &project,
 			})
 			if err != nil {
 				fmt.Println("Could not create Workspace.\n\n Error:", err.Error())
